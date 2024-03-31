@@ -2,12 +2,20 @@
 
 Usage:
 
-    $ cargo run -- --dist 14000 --time 60 --breaks 30 --stints 4
-    2m5.3571396s
-
-    $ cargo run -- --dist 10000 --time 43 --breaks 30 --stints 4
-    2m4.5s
-
-    $ cargo run -- --dist 10000 --time 42 --breaks 30 --stints 4
-    2m1.5s
-
+    $ rowcalc --dist 14000 --time 60 --by-dist 1000
+     split        dist       time
+         1.       1000        257s
+         2.       2000        514s
+         3.       3000        771s
+         4.       4000       1029s
+         5.       5000       1286s
+         6.       6000       1543s
+         7.       7000       1800s
+         8.       8000       2057s
+         9.       9000       2314s
+        10.      10000       2571s
+        11.      11000       2829s
+        12.      12000       3086s
+        13.      13000       3343s
+        14.      14000       3600s
+    time per 500m: 2m09s
