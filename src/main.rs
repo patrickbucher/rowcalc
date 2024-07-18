@@ -12,22 +12,47 @@ struct Args {
     #[arg(short, long)]
     time: u32,
 
-    /// Report target goals by distance
-    #[arg(short, long, default_value_t = 1000)]
-    by_dist: u32,
+    /// Report target goals by distance (in meters)
+    #[arg(long)]
+    by_dist: Option<u32>,
+
+    /// Report target goals by time (in seconds)
+    #[arg(long)]
+    by_time: Option<u32>,
 }
 
 fn main() {
     let args = Args::parse();
-    let (split_mins_500m, split_secs_500m) = calc_split_time(args.dist, args.time * 60, 500.0);
-    let steps = args.dist / args.by_dist;
-    let secs_per_dist = (args.time as f32 * 60.0) / (args.dist as f32 / args.by_dist as f32);
-    println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
-    for i in 1..=steps {
-        let dist = i * args.by_dist;
-        let time = i as f32 * secs_per_dist;
-        println!("{:>6}. {:>10} {:>10}s", i, dist, time.round());
+
+    if args.by_dist.and(args.by_time).is_some() {
+        panic!("report target either by --by-dist or --by-time, but not by both");
+    } else if let Some(by_dist) = args.by_dist {
+        let secs_per_dist = (args.time as f32 * 60.0) / (args.dist as f32 / by_dist as f32);
+        let steps = args.dist / by_dist;
+
+        // TODO: separate calculation from output
+        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
+        for i in 1..=steps {
+            let dist = i * by_dist;
+            let time = i as f32 * secs_per_dist;
+            println!("{:>6}. {:>10} {:>10}s", i, dist, time.round());
+        }
+    } else if let Some(by_time) = args.by_time {
+        let dist_per_secs = (args.dist as f32) / (args.time as f32 * 60.0 / by_time as f32);
+        let steps = args.time / (by_time / 60);
+
+        // TODO: separate calculation from output
+        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
+        for i in 1..=steps {
+            let secs = i * by_time;
+            let dist = i as f32 * dist_per_secs;
+            println!("{:>6}. {:>10} {:>10}s", i, dist.round(), secs);
+        }
+    } else {
+        panic!("report target either --by-dist or --by-time, but not by both");
     }
+
+    let (split_mins_500m, split_secs_500m) = calc_split_time(args.dist, args.time * 60, 500.0);
     println!("time per 500m: {}m{:02}s", split_mins_500m, split_secs_500m);
 }
 
