@@ -1,6 +1,7 @@
 [package]
 name = "rowcalc"
 description = "calculates split times for rowing sessons"
+repository = "https://github.com/patrickbucher/rowcalc"
 license = "MIT"
 version = "0.1.2"
 edition = "2021"
