@@ -3,6 +3,7 @@
 Usage:
 
     $ rowcalc --dist 14000 --time 60 --by-dist 1000
+    time per 500m: 2m09s
      split        dist       time
          1.       1000        257s
          2.       2000        514s
@@ -18,4 +19,20 @@ Usage:
         12.      12000       3086s
         13.      13000       3343s
         14.      14000       3600s
+
+    $ rowcalc --dist 14000 --time 60 --by-time 300
+    time per 500m: 2m09s
+     split        dist       time
+         1.       1167        300s
+         2.       2333        600s
+         3.       3500        900s
+         4.       4667       1200s
+         5.       5833       1500s
+         6.       7000       1800s
+         7.       8167       2100s
+         8.       9333       2400s
+         9.      10500       2700s
+        10.      11667       3000s
+        11.      12833       3300s
+        12.      14000       3600s
     time per 500m: 2m09s
