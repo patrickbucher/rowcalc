@@ -2,3 +2,4 @@
 - [ ] include breaks (number, duration)
 - [ ] calculate split times using breaks
 - [ ] format 500m split time using `duration_str`
+- [ ] create an enum for output entries (either row or break)
