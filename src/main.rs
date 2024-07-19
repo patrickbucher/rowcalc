@@ -23,36 +23,37 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+    let mut parts: Vec<(u32, u32, u32)> = Vec::new();
 
     if args.by_dist.and(args.by_time).is_some() {
         panic!("report target either by --by-dist or --by-time, but not by both");
     } else if let Some(by_dist) = args.by_dist {
         let secs_per_dist = (args.time as f32 * 60.0) / (args.dist as f32 / by_dist as f32);
         let steps = args.dist / by_dist;
-
-        // TODO: separate calculation from output
-        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
         for i in 1..=steps {
             let dist = i * by_dist;
             let time = i as f32 * secs_per_dist;
-            println!("{:>6}. {:>10} {:>10}s", i, dist, time.round());
+            parts.push((i, dist, time.round() as u32));
         }
     } else if let Some(by_time) = args.by_time {
         let dist_per_secs = (args.dist as f32) / (args.time as f32 * 60.0 / by_time as f32);
         let steps = args.time / (by_time / 60);
-
-        // TODO: separate calculation from output
-        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
         for i in 1..=steps {
             let secs = i * by_time;
             let dist = i as f32 * dist_per_secs;
-            println!("{:>6}. {:>10} {:>10}s", i, dist.round(), secs);
+            parts.push((i, dist.round() as u32, secs));
         }
     } else {
         panic!("report target either --by-dist or --by-time, but not by both");
     }
-
     let (split_mins_500m, split_secs_500m) = calc_split_time(args.dist, args.time * 60, 500.0);
+
+    if !parts.is_empty() {
+        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
+        for (i, dist, time) in parts {
+            println!("{:>6}. {:>10} {:>10}s", i, dist, time);
+        }
+    }
     println!("time per 500m: {}m{:02}s", split_mins_500m, split_secs_500m);
 }
 
