@@ -28,9 +28,11 @@ fn main() {
     let parts: Vec<(u32, u32, u32)> = if args.by_dist.and(args.by_time).is_some() {
         panic!("report target either by --by-dist or --by-time, but not by both");
     } else if let Some(by_dist) = args.by_dist {
-        calc_stints_by_dist(args.time, args.dist, by_dist)
+        let stints = args.dist / by_dist;
+        calc_stints(args.time, args.dist, stints)
     } else if let Some(by_time) = args.by_time {
-        calc_stints_by_time(args.time, args.dist, by_time)
+        let stints = args.time * 60 / by_time;
+        calc_stints(args.time, args.dist, stints)
     } else {
         panic!("report target either --by-dist or --by-time, but not by both");
     };
@@ -44,26 +46,14 @@ fn main() {
     }
 }
 
-fn calc_stints_by_dist(time: u32, dist: u32, by_dist: u32) -> Vec<(u32, u32, u32)> {
+fn calc_stints(time: u32, dist: u32, stints: u32) -> Vec<(u32, u32, u32)> {
     let mut parts: Vec<(u32, u32, u32)> = Vec::new();
-    let secs_per_dist = (time as f32 * 60.0) / (dist as f32 / by_dist as f32);
-    let steps = dist / by_dist;
-    for i in 1..=steps {
-        let dist = i * by_dist;
-        let time = i as f32 * secs_per_dist;
-        parts.push((i, dist, time.round() as u32));
-    }
-    parts
-}
-
-fn calc_stints_by_time(time: u32, dist: u32, by_time: u32) -> Vec<(u32, u32, u32)> {
-    let mut parts: Vec<(u32, u32, u32)> = Vec::new();
-    let dist_per_secs = (dist as f32) / (time as f32 * 60.0 / by_time as f32);
-    let steps = (time * 60) / by_time;
-    for i in 1..=steps {
-        let secs = i * by_time;
-        let dist = i as f32 * dist_per_secs;
-        parts.push((i, dist.round() as u32, secs));
+    let split_time = time * 60 / stints;
+    let split_dist = dist / stints;
+    for i in 1..=stints {
+        let time = i * split_time;
+        let dist = i * split_dist;
+        parts.push((i, dist, time));
     }
     parts
 }
