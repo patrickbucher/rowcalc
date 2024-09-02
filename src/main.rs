@@ -1,4 +1,6 @@
 use clap::Parser;
+use duration_str::parse;
+use std::time::Duration;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -8,67 +10,45 @@ struct Args {
     #[arg(short, long)]
     dist: u32,
 
-    /// Time in minutes
+    /// Time as duration string (e.g. 1h, 45m, 42m30s)
     #[arg(short, long)]
-    time: u32,
+    time: String,
 
-    /// Report target goals by distance (in meters)
-    #[arg(long)]
-    by_dist: Option<u32>,
+    /// Pause as duration string (e.g. 30s)
+    #[arg(short, long)]
+    pause: Option<String>,
 
-    /// Report target goals by time (in seconds)
-    #[arg(long)]
-    by_time: Option<u32>,
+    /// Breaks as number (e.g. 3)
+    #[arg(short, long)]
+    breaks: Option<u32>,
+}
+
+enum Phase {
+    Rowing{dist: u32, time: Duration},
+    Resting{time: Duration},
 }
 
 fn main() {
     let args = Args::parse();
+    let dist = args.dist;
+    let time = parse(args.time).expect("time indication");
+    let pause = parse(args.pause.unwrap_or("0s".into())).unwrap_or(Duration::new(0, 0));
+    let breaks = args.breaks.unwrap_or(0);
+    let stints = breaks + 1;
+    println!(
+        "row {}m in {:?} with {} breaks of {:?}",
+        dist, time, breaks, pause
+    );
 
-    let (split_mins_500m, split_secs_500m) = calc_split_time(args.dist, args.time * 60, 500.0);
-    let parts: Vec<(u32, u32, u32)> = if args.by_dist.and(args.by_time).is_some() {
-        panic!("report target either by --by-dist or --by-time, but not by both");
-    } else if let Some(by_dist) = args.by_dist {
-        let stints = args.dist / by_dist;
-        calc_stints(args.time, args.dist, stints)
-    } else if let Some(by_time) = args.by_time {
-        let stints = args.time * 60 / by_time;
-        calc_stints(args.time, args.dist, stints)
-    } else {
-        panic!("report target either --by-dist or --by-time, but not by both");
-    };
+    let total_break_time = pause.saturating_mul(breaks);
+    println!("total pause time: {total_break_time:?}");
 
-    println!("time per 500m: {}m{:02}s", split_mins_500m, split_secs_500m);
-    if !parts.is_empty() {
-        println!("{:>6}  {:>10} {:>10}", "split", "dist", "time");
-        for (i, dist, time) in parts {
-            println!("{:>6}. {:>10} {:>10}s", i, dist, time);
-        }
-    }
-}
+    let total_rowing_time = time.saturating_sub(total_break_time);
+    println!("total rowing time: {total_rowing_time:?}");
 
-fn calc_stints(time: u32, dist: u32, stints: u32) -> Vec<(u32, u32, u32)> {
-    let mut parts: Vec<(u32, u32, u32)> = Vec::new();
-    let split_time = (time * 60) as f32 / (stints as f32);
-    let split_dist = dist as f32 / (stints as f32);
-    for i in 1..=stints {
-        let time = i as f32 * split_time;
-        let dist = i as f32 * split_dist;
-        parts.push((i, dist.round() as u32, time.round() as u32));
-    }
-    parts
-}
+    let stint_rowing_time = total_rowing_time.div_f32(stints as f32);
+    println!("sting rowing time: {stint_rowing_time:?}");
 
-fn calc_split_time(dist: u32, secs: u32, size: f32) -> (u32, f32) {
-    let n_500_splits = dist as f32 / size;
-    let split_time_secs = secs as f32 / n_500_splits;
-    let split_mins = split_time_secs as u32 / 60;
-    let split_secs = split_time_secs - (split_mins * 60) as f32;
-    (split_mins, round(split_secs, 1.0))
-}
-
-fn round(value: f32, granularity: f32) -> f32 {
-    let stretch = 1.0 / granularity;
-    let scaled = value * stretch;
-    let rounded = scaled.round();
-    rounded / stretch
+    let velocity = dist as f32 / total_rowing_time.as_secs_f32(); // m/s
+    println!("velocity: {velocity:?}m/s");
 }
