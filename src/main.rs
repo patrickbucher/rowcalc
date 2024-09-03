@@ -1,5 +1,6 @@
 use clap::Parser;
 use duration_str::parse;
+use rowcalc::calc_split_time;
 use std::time::Duration;
 
 #[derive(Parser, Debug)]
@@ -24,8 +25,8 @@ struct Args {
 }
 
 enum Phase {
-    Rowing{dist: u32, time: Duration},
-    Resting{time: Duration},
+    Rowing { dist: u32, time: Duration },
+    Resting { time: Duration },
 }
 
 fn main() {
@@ -51,4 +52,7 @@ fn main() {
 
     let velocity = dist as f32 / total_rowing_time.as_secs_f32(); // m/s
     println!("velocity: {velocity:?}m/s");
+
+    let split_time = calc_split_time(dist, time.as_secs() as u32, 500 as f32);
+    println!("500m split time: {}m{}s", split_time.0, split_time.1);
 }
