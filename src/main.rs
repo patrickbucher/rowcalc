@@ -22,6 +22,7 @@ struct Args {
     /// Breaks as number (e.g. 3)
     #[arg(short, long)]
     breaks: Option<u32>,
+    // TODO: specify split time (e.g. 5m) or split distance (e.g. 1000m)
 }
 
 fn main() {
@@ -53,20 +54,36 @@ fn main() {
 
     println!();
 
+    let stint_dist: f32 = dist as f32 / stints as f32;
+    let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
+
+    let split_dist: usize = 500; // TODO: fill with argument from above
+    let split_time: f32 = stint_time / (stint_dist as f32 / split_dist as f32);
+    println!("stint dist: {}m", stint_dist);
+    println!("stint time: {}s", stint_time);
+
     let mut phases: Vec<Phase> = Vec::new();
-    let mut running_time = Duration::new(0, 0);
-    for i in 0..(stints + breaks) {
-        let phase = if i % 2 == 0 {
-            running_time = running_time.saturating_add(stint_rowing_time);
-            Phase::Rowing {
-                dist: dist / stints,
-                time: running_time,
-            }
+    let mut elapsed_time = Duration::new(0, 0);
+    let mut elapsed_dist: f32 = 0.0;
+    loop {
+        // TODO: keep track of when done
+        if elapsed_dist > dist as f32 {
+            break;
+        }
+        if elapsed_dist + split_dist as f32 > stint_dist as f32 {
+            // TODO: account for dist/time elapsed rowing
+            phases.push(Phase::Rowing {
+                dist: 0,
+                time: Duration::new(0, 0),
+            });
+            phases.push(Phase::Resting { time: pause });
         } else {
-            running_time = running_time.saturating_add(pause);
-            Phase::Resting { time: running_time }
-        };
-        phases.push(phase);
+            elapsed_dist += stint_dist;
+            phases.push(Phase::Rowing {
+                dist: split_dist as u32,
+                time: Duration::from_secs(split_time as u64),
+            });
+        }
     }
     for phase in phases {
         println!("{}", phase);
