@@ -59,7 +59,7 @@ fn main() {
 
     let split_dist: f32 = 500_f32; // TODO: fill with argument (to be defined) from above
     let split_time =
-        Duration::from_secs((stint_time / (stint_dist as f32 / split_dist)).round() as u64);
+        Duration::from_secs((stint_time / (stint_dist / split_dist)).round() as u64);
     println!("split dist: {}m", split_dist);
     println!("split time: {:?}", split_time);
 
