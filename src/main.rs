@@ -57,7 +57,7 @@ fn main() {
     let stint_dist: f32 = dist as f32 / stints as f32;
     let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
 
-    let split_dist: f32 = 500_f32; // TODO: fill with argument from above
+    let split_dist: f32 = 500_f32; // TODO: fill with argument (to be defined) from above
     let split_time =
         Duration::from_secs((stint_time / (stint_dist as f32 / split_dist)).round() as u64);
     println!("split dist: {}m", split_dist);
@@ -71,15 +71,17 @@ fn main() {
         elapsed_dist += split_dist;
         elapsed_time = elapsed_time.saturating_add(split_time);
         phases.push(Phase::Rowing {
-            time: split_time,
-            dist: split_dist as u32,
-        }); // TODO: absolute times
+            time: elapsed_time,
+            dist: elapsed_dist as u32,
+        });
         let stints_finished = ((elapsed_dist / dist as f32) * stints as f32).floor();
-        println!("#{stints_finished} stints finished, elapsed {elapsed_dist}/{dist}");
+        if stints_finished as u32 == stints {
+            break;
+        }
         if stints_finished as usize > breaks_taken {
-            phases.push(Phase::Resting { time: pause }); // TODO: absolute times
+            elapsed_time = elapsed_time.saturating_add(pause);
+            phases.push(Phase::Resting { time: elapsed_time });
             breaks_taken += 1;
-            elapsed_time.saturating_add(pause);
         }
     }
     for phase in phases {

@@ -10,7 +10,7 @@ impl Display for Phase {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Phase::Rowing { dist, time } => {
-                write!(f, "row {}m until {}", dist, fmt_mins_secs(time))
+                write!(f, "row up to {}m until {}", dist, fmt_mins_secs(time))
             }
             Phase::Resting { time } => write!(f, "break until {}", fmt_mins_secs(time)),
         }
