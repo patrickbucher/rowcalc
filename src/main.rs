@@ -58,8 +58,7 @@ fn main() {
     let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
 
     let split_dist: f32 = 500_f32; // TODO: fill with argument (to be defined) from above
-    let split_time =
-        Duration::from_secs((stint_time / (stint_dist / split_dist)).round() as u64);
+    let split_time = Duration::from_secs((stint_time / (stint_dist / split_dist)).round() as u64);
     println!("split dist: {}m", split_dist);
     println!("split time: {:?}", split_time);
 
