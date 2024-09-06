@@ -57,32 +57,29 @@ fn main() {
     let stint_dist: f32 = dist as f32 / stints as f32;
     let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
 
-    let split_dist: usize = 500; // TODO: fill with argument from above
-    let split_time: f32 = stint_time / (stint_dist as f32 / split_dist as f32);
-    println!("stint dist: {}m", stint_dist);
-    println!("stint time: {}s", stint_time);
+    let split_dist: f32 = 500_f32; // TODO: fill with argument from above
+    let split_time =
+        Duration::from_secs((stint_time / (stint_dist as f32 / split_dist)).round() as u64);
+    println!("split dist: {}m", split_dist);
+    println!("split time: {:?}", split_time);
 
     let mut phases: Vec<Phase> = Vec::new();
-    let mut elapsed_time = Duration::new(0, 0);
     let mut elapsed_dist: f32 = 0.0;
-    loop {
-        // TODO: keep track of when done
-        if elapsed_dist > dist as f32 {
-            break;
-        }
-        if elapsed_dist + split_dist as f32 > stint_dist as f32 {
-            // TODO: account for dist/time elapsed rowing
-            phases.push(Phase::Rowing {
-                dist: 0,
-                time: Duration::new(0, 0),
-            });
-            phases.push(Phase::Resting { time: pause });
-        } else {
-            elapsed_dist += stint_dist;
-            phases.push(Phase::Rowing {
-                dist: split_dist as u32,
-                time: Duration::from_secs(split_time as u64),
-            });
+    let mut elapsed_time = Duration::new(0, 0);
+    let mut breaks_taken: usize = 0;
+    while elapsed_dist < dist as f32 {
+        elapsed_dist += split_dist;
+        elapsed_time = elapsed_time.saturating_add(split_time);
+        phases.push(Phase::Rowing {
+            time: split_time,
+            dist: split_dist as u32,
+        }); // TODO: absolute times
+        let stints_finished = ((elapsed_dist / dist as f32) * stints as f32).floor();
+        println!("#{stints_finished} stints finished, elapsed {elapsed_dist}/{dist}");
+        if stints_finished as usize > breaks_taken {
+            phases.push(Phase::Resting { time: pause }); // TODO: absolute times
+            breaks_taken += 1;
+            elapsed_time.saturating_add(pause);
         }
     }
     for phase in phases {
