@@ -67,14 +67,24 @@ fn main() {
     let mut elapsed_time = Duration::new(0, 0);
     let mut breaks_taken: usize = 0;
     while elapsed_dist < dist as f32 {
+        let dist_left = dist as f32 - elapsed_dist;
+        let time_left = time.saturating_sub(elapsed_time);
+        let (split_dist, split_time) = if dist_left < split_dist as f32 {
+            (dist_left, time_left)
+        } else {
+            (split_dist, split_time)
+        };
+
         elapsed_dist += split_dist;
         elapsed_time = elapsed_time.saturating_add(split_time);
+
         phases.push(Phase::Rowing {
             time: elapsed_time,
             dist: elapsed_dist as u32,
         });
         let stints_finished = ((elapsed_dist / dist as f32) * stints as f32).floor();
         if stints_finished as u32 == stints {
+            // TODO: is this still needed?
             break;
         }
         if stints_finished as usize > breaks_taken {
