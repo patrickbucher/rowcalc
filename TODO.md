@@ -1,7 +1,0 @@
-- Formatting
-    - [ ] include `duration_str` crate for duration input
-    - [ ] format 500m split time using `duration_str`
-- Features
-    - [ ] include breaks (number, duration)
-    - [ ] calculate split times using breaks
-    - [ ] create an enum for output entries (either row or break)
