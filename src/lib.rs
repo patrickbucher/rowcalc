@@ -17,6 +17,48 @@ impl Display for Phase {
     }
 }
 
+pub fn calc_phases(
+    dist: f32,
+    split_dist: f32,
+    time: Duration,
+    split_time: Duration,
+    stints: usize,
+    pause: Duration,
+) -> Vec<Phase> {
+    let mut phases: Vec<Phase> = Vec::new();
+    let mut elapsed_dist: f32 = 0.0;
+    let mut elapsed_time = Duration::new(0, 0);
+    let mut breaks_taken: usize = 0;
+    while elapsed_dist < dist as f32 {
+        let dist_left = dist as f32 - elapsed_dist;
+        let time_left = time.saturating_sub(elapsed_time);
+        let (split_dist, split_time) = if dist_left < split_dist as f32 {
+            (dist_left, time_left)
+        } else {
+            (split_dist, split_time)
+        };
+
+        elapsed_dist += split_dist;
+        elapsed_time = elapsed_time.saturating_add(split_time);
+
+        phases.push(Phase::Rowing {
+            time: elapsed_time,
+            dist: elapsed_dist as u32,
+        });
+        let stints_finished = ((elapsed_dist / dist) * stints as f32).floor() as usize;
+        if stints_finished == stints {
+            // TODO: is this still needed?
+            break;
+        }
+        if stints_finished as usize > breaks_taken {
+            elapsed_time = elapsed_time.saturating_add(pause);
+            phases.push(Phase::Resting { time: elapsed_time });
+            breaks_taken += 1;
+        }
+    }
+    phases
+}
+
 fn fmt_mins_secs(time: &Duration) -> String {
     let (mins, secs) = secs_to_mins_secs(time);
     if mins > 0 {

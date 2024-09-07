@@ -1,6 +1,6 @@
 use clap::Parser;
 use duration_str::parse;
-use rowcalc::{calc_split_time, Phase};
+use rowcalc::{calc_phases, calc_split_time};
 use std::time::Duration;
 
 #[derive(Parser, Debug)]
@@ -31,7 +31,7 @@ fn main() {
     let time = parse(args.time).expect("time indication");
     let pause = parse(args.pause.unwrap_or("0s".into())).unwrap_or(Duration::new(0, 0));
     let breaks = args.breaks.unwrap_or(0);
-    let stints = breaks + 1;
+    let stints = (breaks + 1) as usize;
     println!(
         "row {}m in {:?} with {} breaks of {:?}",
         dist, time, breaks, pause
@@ -52,8 +52,6 @@ fn main() {
     let split_time = calc_split_time(dist, time.as_secs() as u32, 500_f32);
     println!("500m split time: {}m{}s", split_time.0, split_time.1);
 
-    println!();
-
     let stint_dist: f32 = dist as f32 / stints as f32;
     let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
 
@@ -62,38 +60,9 @@ fn main() {
     println!("split dist: {}m", split_dist);
     println!("split time: {:?}", split_time);
 
-    let mut phases: Vec<Phase> = Vec::new();
-    let mut elapsed_dist: f32 = 0.0;
-    let mut elapsed_time = Duration::new(0, 0);
-    let mut breaks_taken: usize = 0;
-    while elapsed_dist < dist as f32 {
-        let dist_left = dist as f32 - elapsed_dist;
-        let time_left = time.saturating_sub(elapsed_time);
-        let (split_dist, split_time) = if dist_left < split_dist as f32 {
-            (dist_left, time_left)
-        } else {
-            (split_dist, split_time)
-        };
+    println!();
 
-        elapsed_dist += split_dist;
-        elapsed_time = elapsed_time.saturating_add(split_time);
-
-        phases.push(Phase::Rowing {
-            time: elapsed_time,
-            dist: elapsed_dist as u32,
-        });
-        let stints_finished = ((elapsed_dist / dist as f32) * stints as f32).floor();
-        if stints_finished as u32 == stints {
-            // TODO: is this still needed?
-            break;
-        }
-        if stints_finished as usize > breaks_taken {
-            elapsed_time = elapsed_time.saturating_add(pause);
-            phases.push(Phase::Resting { time: elapsed_time });
-            breaks_taken += 1;
-        }
-    }
-    for phase in phases {
+    for phase in calc_phases(dist as f32, split_dist, time, split_time, stints, pause) {
         println!("{}", phase);
     }
 }
