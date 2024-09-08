@@ -44,10 +44,7 @@ pub fn calc_phases(
             dist: elapsed_dist as u32,
         });
         let stints_finished = ((elapsed_dist / dist) * stints as f32).floor() as usize;
-        if stints_finished == stints {
-            break;
-        }
-        if stints_finished > breaks_taken {
+        if stints_finished > breaks_taken && breaks_taken < stints - 1 {
             elapsed_time = elapsed_time.saturating_add(pause);
             phases.push(Phase::Resting { time: elapsed_time });
             breaks_taken += 1;
