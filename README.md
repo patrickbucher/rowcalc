@@ -3,7 +3,7 @@
 Usage:
 
     $ rowcalc --dist 10000 --time 42m30s --breaks 3 --pause 30s
-    10000m in 42m30s with 3 breaks of 30s: 500m split time = 2m08s; velocity = 4.07m/s
+    10000m in 42m30s with 3 breaks of 30s: 500m split time = 2m03s; velocity = 4.07m/s
      1) >> until  2m03s up to   500m
      2) >> until  4m06s up to  1000m
      3) >> until  6m09s up to  1500m
