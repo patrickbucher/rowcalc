@@ -10,9 +10,9 @@ impl Display for Phase {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Phase::Rowing { dist, time } => {
-                write!(f, "row up to {}m until {}", dist, fmt_mins_secs(time))
+                write!(f, ">> until {:>6} up to {:>5}m", format_hms(time), dist)
             }
-            Phase::Resting { time } => write!(f, "break until {}", fmt_mins_secs(time)),
+            Phase::Resting { time } => write!(f, "|| until {:>6}", format_hms(time)),
         }
     }
 }
@@ -56,33 +56,25 @@ pub fn calc_phases(
     phases
 }
 
-fn fmt_mins_secs(time: &Duration) -> String {
-    let (mins, secs) = secs_to_mins_secs(time);
-    if mins > 0 {
-        format!("{mins}m{secs}s")
-    } else {
-        format!("{secs}s")
-    }
+pub fn calc_500m_split_time(dist: f32, time: Duration) -> Duration {
+    let secs = time.as_secs_f32();
+    let secs_per_meter = secs / dist;
+    Duration::from_secs((secs_per_meter * 500.0).round() as u64)
 }
 
-pub fn calc_split_time(dist: u32, secs: u32, size: f32) -> (u32, f32) {
-    let n_500_splits = dist as f32 / size;
-    let split_time_secs = secs as f32 / n_500_splits;
-    let split_mins = split_time_secs as u32 / 60;
-    let split_secs = split_time_secs - (split_mins * 60) as f32;
-    (split_mins, round(split_secs, 1.0))
-}
-
-fn secs_to_mins_secs(time: &Duration) -> (u64, u64) {
+pub fn format_hms(time: &Duration) -> String {
     let secs = time.as_secs();
+    let hours = secs / 3600;
+    let secs = secs % 3600;
     let mins = secs / 60;
     let secs = secs % 60;
-    (mins, secs)
-}
-
-fn round(value: f32, granularity: f32) -> f32 {
-    let stretch = 1.0 / granularity;
-    let scaled = value * stretch;
-    let rounded = scaled.round();
-    rounded / stretch
+    let mut buf = String::new();
+    if hours > 0 {
+        buf.push_str(&format!("{hours}h"));
+    }
+    if mins > 0 {
+        buf.push_str(&format!("{mins}m"));
+    }
+    buf.push_str(&format!("{secs:02}s"));
+    buf
 }

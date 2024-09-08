@@ -1,6 +1,6 @@
 use clap::Parser;
 use duration_str::parse;
-use rowcalc::{calc_phases, calc_split_time};
+use rowcalc::{calc_500m_split_time, calc_phases, format_hms};
 use std::time::Duration;
 
 #[derive(Parser, Debug)]
@@ -9,7 +9,7 @@ use std::time::Duration;
 struct Args {
     /// Distance in meters
     #[arg(short, long)]
-    dist: u32,
+    dist: f32,
 
     /// Time as duration string (e.g. 1h, 45m, 42m30s)
     #[arg(short, long)]
@@ -34,9 +34,9 @@ fn main() {
 
     let total_break_time = pause.saturating_mul(breaks);
     let total_rowing_time = time.saturating_sub(total_break_time);
-    let split_time = calc_split_time(dist, time.as_secs() as u32, 500_f32);
-    let split_time_msg = format!("{}m{}s", split_time.0, split_time.1);
-    let velocity = dist as f32 / total_rowing_time.as_secs_f32();
+    let split_time = calc_500m_split_time(dist, time);
+    let split_time_msg = format_hms(&split_time);
+    let velocity = dist / total_rowing_time.as_secs_f32();
 
     let break_msg = if breaks > 0 {
         format!("with {breaks} breaks of {pause:?}")
@@ -48,14 +48,14 @@ fn main() {
         dist, args.time, break_msg, split_time_msg, velocity
     );
 
-    let stint_dist: f32 = dist as f32 / stints as f32;
+    let stint_dist: f32 = dist / stints as f32;
     let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
 
     let split_dist: f32 = 500_f32;
     let split_time = Duration::from_secs((stint_time / (stint_dist / split_dist)).round() as u64);
 
-    let phases = calc_phases(dist as f32, split_dist, time, split_time, stints, pause);
+    let phases = calc_phases(dist, split_dist, time, split_time, stints, pause);
     for (i, phase) in phases.iter().enumerate() {
-        println!("{i:2}) {}", phase);
+        println!("{:2}) {}", i + 1, phase);
     }
 }
