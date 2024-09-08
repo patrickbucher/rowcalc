@@ -44,7 +44,7 @@ fn main() {
         String::from("without any breaks")
     };
     println!(
-        "To row {}m in {} {} a 500m split time of {} and a velocity of {:.2}m/s is needed.",
+        "{}m in {} {}: 500m split time = {}; velocity = {:.2}m/s",
         dist, args.time, break_msg, split_time_msg, velocity
     );
 
