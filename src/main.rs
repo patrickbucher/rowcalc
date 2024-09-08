@@ -48,13 +48,7 @@ fn main() {
         dist, args.time, break_msg, split_time_msg, velocity
     );
 
-    let stint_dist: f32 = dist / stints as f32;
-    let stint_time: f32 = total_rowing_time.as_secs_f32() / stints as f32;
-
-    let split_dist: f32 = 500_f32;
-    let split_time = Duration::from_secs((stint_time / (stint_dist / split_dist)).round() as u64);
-
-    let phases = calc_phases(dist, split_dist, time, split_time, stints, pause);
+    let phases = calc_phases(dist, 500.0, time, split_time, stints, pause);
     for (i, phase) in phases.iter().enumerate() {
         println!("{:2}) {}", i + 1, phase);
     }

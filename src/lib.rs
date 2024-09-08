@@ -56,7 +56,7 @@ pub fn calc_phases(
 pub fn calc_500m_split_time(dist: f32, time: Duration) -> Duration {
     let secs = time.as_secs_f32();
     let secs_per_meter = secs / dist;
-    Duration::from_secs((secs_per_meter * 500.0).round() as u64)
+    Duration::from_secs_f32(secs_per_meter * 500.0)
 }
 
 pub fn format_hms(time: &Duration) -> String {
