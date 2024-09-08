@@ -34,7 +34,7 @@ fn main() {
 
     let total_break_time = pause.saturating_mul(breaks);
     let total_rowing_time = time.saturating_sub(total_break_time);
-    let split_time = calc_500m_split_time(dist, time);
+    let split_time = calc_500m_split_time(dist, total_rowing_time);
     let split_time_msg = format_hms(&split_time);
     let velocity = dist / total_rowing_time.as_secs_f32();
 
