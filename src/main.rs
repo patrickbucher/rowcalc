@@ -44,7 +44,7 @@ fn main() {
         String::from("without any breaks")
     };
     println!(
-        "{}m in {} {}: 500m split time = {}; velocity = {:.2}m/s",
+        "{}m in {} {}: 500m split time = {}, v = {:.2}m/s",
         dist, args.time, break_msg, split_time_msg, velocity
     );
 
