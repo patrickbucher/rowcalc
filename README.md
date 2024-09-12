@@ -1,5 +1,7 @@
 # rowcalc
 
+Calculate plans for rowing sessions.
+
 Usage:
 
     $ rowcalc --dist 10000 --time 42m30s --breaks 3 --pause 30s
